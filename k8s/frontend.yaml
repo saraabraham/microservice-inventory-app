@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: DOCKERHUB_USERNAME/inventory-frontend:latest
+          image: saraabraham765/inventory-frontend:latest
           ports:
             - containerPort: 80
           readinessProbe:

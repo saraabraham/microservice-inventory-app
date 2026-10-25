@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: stats-service
-          image: DOCKERHUB_USERNAME/inventory-stats:latest
+          image: saraabraham765/inventory-stats:latest
           ports:
             - containerPort: 8080
           env:

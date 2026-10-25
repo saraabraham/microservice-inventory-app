@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: inventory-api
-          image: DOCKERHUB_USERNAME/inventory-api:latest
+          image: saraabraham765/inventory-api:latest
           ports:
             - containerPort: 8080
           env:
