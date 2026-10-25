@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stats-service
+  labels:
+    app: stats-service
+spec:
+  replicas: 2          # horizontally scalable independently from inventory-api
+  selector:
+    matchLabels:
+      app: stats-service
+  template:
+    metadata:
+      labels:
+        app: stats-service
+    spec:
+      containers:
+        - name: stats-service
+          image: DOCKERHUB_USERNAME/inventory-stats:latest
+          ports:
+            - containerPort: 8080
+          env:
+            # Cluster-internal DNS name of the inventory-api Service
+            - name: INVENTORY_API_URL
+              value: "http://inventory-api"
+          readinessProbe:
+            httpGet:
+              path: /api/stats/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/stats/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stats-service
+spec:
+  # NodePort exposes this service on every node at port 30082
+  type: NodePort
+  selector:
+    app: stats-service
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30082

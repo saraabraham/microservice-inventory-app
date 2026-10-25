@@ -1,0 +1,13 @@
+bin/
+obj/
+*.user
+*.db
+*.db-shm
+*.db-wal
+publish/
+deploy.zip
+node_modules/
+npm-debug.log*
+build/
+.env.local
+.DS_Store

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon1.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0051BA" />
+  <meta name="description" content="IKEA Inventory Management System - Track and manage your inventory efficiently" />
+
+  <!-- DNS Prefetch for API domain -->
+  <link rel="dns-prefetch" href="https://inventory-api-webapp-8b52885b.azurewebsites.net" />
+
+  <!-- Preconnect to API with crossorigin for better performance -->
+  <link rel="preconnect" href="https://inventory-api-webapp-8b52885b.azurewebsites.net" crossorigin />
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="%PUBLIC_URL%/static/css/main.css" as="style" />
+
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+
+  <!-- Manifest -->
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+  <title>IKEA Inventory Management</title>
+
+  <!-- Inline critical CSS for above-the-fold content (optional) -->
+  <style>
+    /* Critical CSS - Add minimal styles for initial render */
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #root {
+      min-height: 100vh;
+    }
+
+    /* Loading spinner for initial load */
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0051BA;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root">
+    <!-- Optional: Show loading indicator until React app loads -->
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- 
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+      
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+      
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+</body>
+
+</html>
