@@ -64,22 +64,26 @@ kubectl apply -f k8s/inventory-api.yaml
 kubectl apply -f k8s/stats-service.yaml
 kubectl apply -f k8s/frontend.yaml
 
-# 3. Wait for all pods to be ready
+# 3. Wait for all pods to be ready (takes ~60s on first run)
 kubectl get pods -w
+# All pods should show 1/1 Running before continuing
 
-# 4. Get the node IP
-minikube ip           # minikube
-# or use: localhost   # Docker Desktop
+# 4. Forward ports to localhost
+kubectl port-forward service/frontend      3000:80  &
+kubectl port-forward service/inventory-api 8080:80  &
+kubectl port-forward service/stats-service 8081:80  &
 
 # 5. Open the app
-open http://<node-ip>:30080
+open http://localhost:3000
 ```
 
 | URL | Service |
 |---|---|
-| `http://<node-ip>:30080` | Frontend |
-| `http://<node-ip>:30081/swagger` | InventoryAPI Swagger |
-| `http://<node-ip>:30082/swagger` | StatsService Swagger |
+| `http://localhost:3000` | Frontend |
+| `http://localhost:8080/swagger` | InventoryAPI Swagger |
+| `http://localhost:8081/swagger` | StatsService Swagger |
+
+> **Note:** `kubectl port-forward` keeps running in the foreground. Run each in a separate terminal, or append `&` to background them as shown above. Press `Ctrl+C` to stop.
 
 ### Option B — Kubernetes from source (build your own images)
 
