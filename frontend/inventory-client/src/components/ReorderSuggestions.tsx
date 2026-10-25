@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { AlertTriangle, ShoppingCart, Mail } from 'lucide-react';
+import { AlertTriangle, ShoppingCart, Mail, CheckCircle } from 'lucide-react';
 
 interface ReorderSuggestion {
     id: number;
@@ -24,6 +24,9 @@ const ReorderSuggestions: React.FC = () => {
     const [suggestions, setSuggestions] = useState<ReorderSuggestion[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+    const [approving, setApproving] = useState(false);
+    const [approveSuccess, setApproveSuccess] = useState<string | null>(null);
+    const [editedQty, setEditedQty] = useState<Record<number, number>>({});
 
     useEffect(() => {
         loadSuggestions();
@@ -58,6 +61,52 @@ const ReorderSuggestions: React.FC = () => {
                 return 'bg-orange-100 text-orange-800 border-orange-300';
             default:
                 return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        }
+    };
+
+    const getQty = (item: ReorderSuggestion) =>
+        editedQty[item.id] ?? item.suggestedOrderQuantity;
+
+    const reorderSingle = async (item: ReorderSuggestion) => {
+        setApproving(true);
+        setApproveSuccess(null);
+        try {
+            await axios.post(`${process.env.REACT_APP_API_URL}/transactions`, {
+                productId: item.id,
+                transactionType: 'Purchase',
+                quantity: getQty(item),
+                notes: `Reorder from ${item.supplier.name}`,
+            });
+            setApproveSuccess(`Purchase transaction created for ${item.name}.`);
+            await loadSuggestions();
+        } catch (error) {
+            console.error('Error creating transaction:', error);
+        } finally {
+            setApproving(false);
+        }
+    };
+
+    const approvePurchases = async () => {
+        const selected = suggestions.filter(s => selectedItems.has(s.id));
+        if (selected.length === 0) return;
+        setApproving(true);
+        setApproveSuccess(null);
+        try {
+            await Promise.all(selected.map(item =>
+                axios.post(`${process.env.REACT_APP_API_URL}/transactions`, {
+                    productId: item.id,
+                    transactionType: 'Purchase',
+                    quantity: getQty(item),
+                    notes: `Reorder from ${item.supplier.name}`,
+                })
+            ));
+            setApproveSuccess(`Created ${selected.length} Purchase transaction${selected.length > 1 ? 's' : ''}. Check Transaction History.`);
+            setSelectedItems(new Set());
+            await loadSuggestions();
+        } catch (error) {
+            console.error('Error creating transactions:', error);
+        } finally {
+            setApproving(false);
         }
     };
 
@@ -116,15 +165,32 @@ Please review and approve before placing the order.
                     </p>
                 </div>
                 {selectedItems.size > 0 && (
-                    <button
-                        onClick={generatePurchaseOrder}
-                        className="bg-ikea-blue text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center"
-                    >
-                        <ShoppingCart className="w-5 h-5 mr-2" />
-                        Generate PO ({selectedItems.size} items - ${totalEstimatedCost.toFixed(2)})
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={approvePurchases}
+                            disabled={approving}
+                            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 flex items-center disabled:opacity-50"
+                        >
+                            <CheckCircle className="w-5 h-5 mr-2" />
+                            {approving ? 'Creating...' : `Approve & Record Purchases (${selectedItems.size})`}
+                        </button>
+                        <button
+                            onClick={generatePurchaseOrder}
+                            className="bg-ikea-blue text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center"
+                        >
+                            <ShoppingCart className="w-5 h-5 mr-2" />
+                            Generate PO (${totalEstimatedCost.toFixed(2)})
+                        </button>
+                    </div>
                 )}
             </div>
+
+            {approveSuccess && (
+                <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center text-green-800">
+                    <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
+                    {approveSuccess}
+                </div>
+            )}
 
             {suggestions.length === 0 ? (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
@@ -163,13 +229,16 @@ Please review and approve before placing the order.
                                     Current Stock
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Suggested Order
+                                    Order Qty (editable)
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                     Est. Cost
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                     Supplier
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Action
                                 </th>
                             </tr>
                         </thead>
@@ -204,9 +273,13 @@ Please review and approve before placing the order.
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-bold text-ikea-blue">
-                                            {suggestion.suggestedOrderQuantity} units
-                                        </div>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={getQty(suggestion)}
+                                            onChange={e => setEditedQty(prev => ({ ...prev, [suggestion.id]: parseInt(e.target.value) || 1 }))}
+                                            className="w-24 border border-gray-300 rounded px-2 py-1 text-sm font-bold text-ikea-blue focus:outline-none focus:ring-2 focus:ring-ikea-blue"
+                                        />
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-semibold text-gray-900">
@@ -222,6 +295,16 @@ Please review and approve before placing the order.
                                             <Mail className="w-3 h-3 mr-1" />
                                             {suggestion.supplier.email}
                                         </a>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <button
+                                            onClick={() => reorderSingle(suggestion)}
+                                            disabled={approving}
+                                            className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"
+                                        >
+                                            <CheckCircle className="w-3 h-3" />
+                                            Reorder
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
