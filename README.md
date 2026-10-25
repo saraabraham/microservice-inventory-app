@@ -96,8 +96,11 @@ docker login
 # 2. Build, push, and deploy everything
 ./deploy.sh <your-dockerhub-username>
 
-# 3. Open the app (minikube example)
-open http://$(minikube ip):30080
+# 3. Forward ports and open the app
+kubectl port-forward service/frontend      3000:80 &
+kubectl port-forward service/inventory-api 8080:80 &
+kubectl port-forward service/stats-service 8081:80 &
+open http://localhost:3000
 ```
 
 The script builds all three images, pushes them to Docker Hub, patches the Kubernetes manifests with your username, and applies them.
