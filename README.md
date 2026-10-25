@@ -49,9 +49,41 @@ Kubernetes pulls these automatically when you apply the manifests — no local b
 
 ## Quick Start
 
-### Option A — Kubernetes (assignment submission)
+### Option A — Kubernetes using pre-built images (recommended)
 
-**Prerequisites:** Docker, kubectl, a running cluster (minikube / Docker Desktop), and a Docker Hub account.
+**Prerequisites:** `kubectl` and a running cluster (minikube or Docker Desktop with Kubernetes enabled). No Docker Hub account needed — images are public.
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/saraabraham/microservice-inventory-app.git
+cd microservice-inventory-app
+
+# 2. Apply all manifests (Kubernetes pulls images from Docker Hub automatically)
+kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/inventory-api.yaml
+kubectl apply -f k8s/stats-service.yaml
+kubectl apply -f k8s/frontend.yaml
+
+# 3. Wait for all pods to be ready
+kubectl get pods -w
+
+# 4. Get the node IP
+minikube ip           # minikube
+# or use: localhost   # Docker Desktop
+
+# 5. Open the app
+open http://<node-ip>:30080
+```
+
+| URL | Service |
+|---|---|
+| `http://<node-ip>:30080` | Frontend |
+| `http://<node-ip>:30081/swagger` | InventoryAPI Swagger |
+| `http://<node-ip>:30082/swagger` | StatsService Swagger |
+
+### Option B — Kubernetes from source (build your own images)
+
+**Prerequisites:** Docker, kubectl, a running cluster, and a Docker Hub account.
 
 ```bash
 # 1. Log in to Docker Hub
@@ -66,7 +98,7 @@ open http://$(minikube ip):30080
 
 The script builds all three images, pushes them to Docker Hub, patches the Kubernetes manifests with your username, and applies them.
 
-### Option B — Docker Compose (local development)
+### Option C — Docker Compose (local development)
 
 ```bash
 docker-compose up --build
