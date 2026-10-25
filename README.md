@@ -33,6 +33,20 @@ All three application microservices are horizontally scalable independently (eac
 
 ---
 
+## Docker Hub Images
+
+Pre-built images are available on Docker Hub and are referenced directly in the Kubernetes manifests:
+
+| Image | Docker Hub |
+|---|---|
+| InventoryAPI | `saraabraham765/inventory-api:latest` |
+| StatsService | `saraabraham765/inventory-stats:latest` |
+| Frontend | `saraabraham765/inventory-frontend:latest` |
+
+Kubernetes pulls these automatically when you apply the manifests — no local build required.
+
+---
+
 ## Quick Start
 
 ### Option A — Kubernetes (assignment submission)
